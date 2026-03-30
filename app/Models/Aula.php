@@ -10,13 +10,7 @@ class Aula extends Model
     use HasFactory;
 
     // Campos que podem ser preenchidos via formulário
-    protected $fillable = [
-        'titulo',
-        'professor_id',
-        'is_ativa',
-        'latitude',
-        'longitude'
-    ];
+    protected $fillable = ['titulo', 'professor_id', 'is_ativa', 'latitude', 'longitude', 'data_aula'];
 
     // Relacionamento: Uma aula pertence a um Professor (User)
     public function professor()

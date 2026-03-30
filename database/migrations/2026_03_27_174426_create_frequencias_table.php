@@ -8,18 +8,20 @@ return new class extends Migration {
     /**
      * Run the migrations.
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('frequencias', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained();
-            $table->foreignId('aula_id')->constrained();
-            $table->string('ip_address');
-            $table->string('latitude_aluno');
-            $table->string('longitude_aluno');
-            $table->string('foto_path');
-            $table->boolean('face_verified')->default(false);
+            $table->foreignId('aula_id')->constrained('aulas')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Aluno
+            $table->decimal('latitude_aluno', 10, 8);
+            $table->decimal('longitude_aluno', 11, 8);
+            $table->float('distancia_metros')->nullable();
+            $table->string('ip_address')->nullable();
             $table->timestamps();
+
+            // Garante que o aluno não assine a mesma aula duas vezes
+            $table->unique(['aula_id', 'user_id']);
         });
     }
 

@@ -2,49 +2,55 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Models\Aula;
+use App\Models\Frequencia;
 use Illuminate\Http\Request;
 
 class FrequenciaController extends Controller
 {
-    public function store(Request $request, $id)
+    public function index()
     {
-        $aula = Aula::findOrFail($id);
+        // Mostra apenas aulas que o professor ATIVOU agora
+        $aulasAbertas = Aula::where('is_ativa', true)->orderBy('created_at', 'desc')->get();
+        return view('aluno.presenca', compact('aulasAbertas'));
+    }
 
-        // Validar IP (Simples auditoria)
-        $ip = $request->ip();
+    public function store(Request $request)
+    {
+        $aula = Aula::findOrFail($request->aula_id);
 
-        // Validar Distância (Haversine)
-        $distancia = $this->haversine(
-            $request->lat,
-            $request->lng,
-            $aula->latitude,
-            $aula->longitude
-        );
+        // 1. Verificar se o aluno já assinou
+        $jaAssinou = Frequencia::where('aula_id', $aula->id)->where('user_id', auth()->id())->exists();
+        if ($jaAssinou)
+            return back()->with('error', 'Sua presença já foi registrada nesta aula.');
 
-        if ($distancia > 0.05) { // Mais de 50 metros
-            return back()->with('error', 'Você está longe demais da sala!');
+        // 2. Calcular Distância (Haversine)
+        $distanciaKm = $this->haversine($request->lat, $request->lng, $aula->latitude, $aula->longitude);
+        $distanciaMetros = $distanciaKm * 1000;
+
+        // 3. Validar Raio de 50 metros (Ajuste se necessário)
+        if ($distanciaMetros > 50) {
+            return back()->with('error', "Você está fora do raio da sala (Distância: " . round($distanciaMetros) . "m).");
         }
 
         Frequencia::create([
+            'aula_id' => $aula->id,
             'user_id' => auth()->id(),
-            'aula_id' => $id,
-            'ip_address' => $ip,
             'latitude_aluno' => $request->lat,
             'longitude_aluno' => $request->lng,
-            'face_verified' => true // Validado pelo JS no cliente
+            'distancia_metros' => $distanciaMetros,
+            'ip_address' => $request->ip(),
         ]);
 
-        return redirect()->route('dashboard')->with('success', 'Presença Confirmada!');
+        return back()->with('success', 'Presença confirmada com sucesso! ✅');
     }
 
     private function haversine($lat1, $lon1, $lat2, $lon2)
     {
-        $earthRadius = 6371; // km
+        $earthRadius = 6371;
         $dLat = deg2rad($lat2 - $lat1);
         $dLon = deg2rad($lon2 - $lon1);
         $a = sin($dLat / 2) * sin($dLat / 2) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon / 2) * sin($dLon / 2);
-        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
-        return $earthRadius * $c;
+        return $earthRadius * (2 * atan2(sqrt($a), sqrt(1 - $a)));
     }
 }

@@ -1,12 +1,10 @@
 <header class="navbar navbar-expand-lg fixed-top bg-light border-bottom">
     <div class="container">
-
-        {{-- <a href="{{ route('dashboard') }}" class="navbar-brand pe-sm-0">
+        <a href="#" class="navbar-brand pe-sm-0">
             <span class="text-primary flex-shrink-0">
-                <img class="d-block mb-2" src="{{ asset('assets/img/SEAFDS.png') }}" width="325" alt="Logo">
+                <img class="d-block mb-2" src="{{ asset('assets/img/logo2.png') }}" width="50" alt="Logo">
             </span>
-        </a> --}}
-
+        </a>
         <div class="dropdown nav d-none d-sm-block order-lg-3">
             <a class="nav-link d-flex align-items-center p-0" href="#" data-bs-toggle="dropdown" aria-expanded="false">
                 <div class="ps-2 text-end">
@@ -48,10 +46,7 @@
                     <a href="{{ route('aula.index') }}"
                         class="nav-link {{ request()->routeIs('aula.*') ? 'active' : '' }}">Minhas Aulas</a>
                 </li>
-                <li class="nav-item">
-                    <a href="{{ route('report.index') }}"
-                        class="nav-link {{ request()->routeIs('report.*') ? 'active' : '' }}">Relatórios de Presença</a>
-                </li>
+
                 @if(Auth::user()->role == 'professor')
                     <li class="nav-item">
                         <a href="{{ route('aula.index') }}"
@@ -91,5 +86,5 @@
 
 {{-- Banner de espaçamento ou institucional abaixo do menu fixed-top --}}
 <div style="margin-top: 100px;">
-    <img class="d-block mb-2" src="https://ceasapb.ctlc.org.br/assets/img/aa.png" width="100%">
+
 </div>
